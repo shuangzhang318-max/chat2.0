@@ -34,7 +34,10 @@
     
     #inviteHistory { max-height: 120px; overflow-y: auto; border: 1px solid #f0f0f0; border-radius: 6px; background: #fafafa; padding: 5px; }
     .history-item { font-size: 12px; padding: 6px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-    .btn-copy { font-size: 10px; padding: 2px 6px; background: #eee; border-radius: 4px; cursor: pointer; }
+    .history-item .info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .history-item .room-n { font-weight: bold; color: var(--blue); }
+    .history-item .code-n { color: var(--muted); font-size: 11px; }
+    .btn-copy { font-size: 10px; padding: 2px 6px; background: #eee; border-radius: 4px; cursor: pointer; flex: 0 0 auto; }
 
     #status{ background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px;
       display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -58,6 +61,7 @@
     #msgInput{ flex:1; padding:10px; font-size:14px; border:1px solid var(--border); border-radius:10px; outline:none; }
     .btn{ padding:10px 12px; font-size:14px; border-radius:10px; border:1px solid var(--border); background:#fff; cursor:pointer; }
     .btn.primary{ background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700; }
+    .btn.sm { padding: 4px 8px; font-size: 11px; }
     #viewer{ position:fixed; inset:0; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; z-index:9999; }
     #viewer img{ max-width:96vw; max-height:90vh; border-radius:12px; }
   </style>
@@ -112,8 +116,8 @@
       <div id="statusText">正在初始化...</div>
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
-      <button class="btn" style="font-size:11px; padding:4px 8px; display:none;" id="toggleAdmin">管理</button>
-      <button class="btn" style="font-size:11px; padding:4px 8px;" id="userLogout">退出登录</button>
+      <button class="btn sm" style="display:none;" id="toggleAdmin">管理</button>
+      <button class="btn sm" id="userLogout">退出登录</button>
       <div id="whoami">-</div>
     </div>
   </div>
@@ -145,7 +149,7 @@ const API_BASE = "https://chat-xyjdzs.avosapps.us";
 const qs = new URLSearchParams(location.search);
 const inviteCode = qs.get("invite") || "";
 const isAdminMode = qs.get("admin") === "1";
-let authMode = "login"; // login | signup
+let authMode = "login"; 
 
 let client = null, conversation = null, myClientId = "";
 let currentAdminSecret = "";
@@ -158,6 +162,17 @@ const doAuthBtn = document.getElementById("doAuth");
 const authMsg = document.getElementById("authMsg");
 const chatEl = document.getElementById("chat");
 const whoamiEl = document.getElementById("whoami");
+
+const adminPanel = document.getElementById("adminPanel");
+const toggleAdminBtn = document.getElementById("toggleAdmin");
+const adminAuthBox = document.getElementById("adminAuth");
+const adminMainBox = document.getElementById("adminMain");
+const adminSecretInput = document.getElementById("adminSecret");
+const doAdminLoginBtn = document.getElementById("doAdminLogin");
+const adminLogoutBtn = document.getElementById("adminLogout");
+const newRoomNameInput = document.getElementById("newRoomName");
+const doCreateRoomBtn = document.getElementById("doCreateRoom");
+const inviteHistoryEl = document.getElementById("inviteHistory");
 
 /* ========== 1. 用户认证逻辑 ========== */
 function updateAuthUI() {
@@ -187,7 +202,7 @@ doAuthBtn.onclick = async () => {
       user = await AV.User.logIn(username, password);
     }
     authOverlay.style.display = "none";
-    startIM(); // 登录成功后启动聊天
+    startIM(); 
   } catch (e) {
     authMsg.textContent = "操作失败: " + (e.message || e);
   } finally {
@@ -200,7 +215,101 @@ document.getElementById("userLogout").onclick = () => {
   location.reload();
 };
 
-/* ========== 2. 聊天核心逻辑 ========== */
+/* ========== 2. 管理逻辑实现 ========== */
+toggleAdminBtn.onclick = () => {
+  const isShow = adminPanel.style.display === "flex";
+  adminPanel.style.display = isShow ? "none" : "flex";
+};
+
+doAdminLoginBtn.onclick = async () => {
+  const secret = adminSecretInput.value;
+  if (!secret) return;
+  try {
+    currentAdminSecret = secret;
+    await refreshInviteHistory();
+    adminAuthBox.style.display = "none";
+    adminMainBox.style.display = "flex";
+    adminLogoutBtn.style.display = "block";
+    sys("🔑 管理后台已登录");
+  } catch (e) {
+    alert("登录失败，密钥不正确");
+    currentAdminSecret = "";
+  }
+};
+
+adminLogoutBtn.onclick = () => {
+  currentAdminSecret = "";
+  adminAuthBox.style.display = "flex";
+  adminMainBox.style.display = "none";
+  adminLogoutBtn.style.display = "none";
+  adminSecretInput.value = "";
+};
+
+async function refreshInviteHistory() {
+  inviteHistoryEl.innerHTML = "正在拉取记录...";
+  const query = new AV.Query('InviteCode');
+  query.descending('createdAt');
+  query.limit(20);
+  try {
+    const list = await query.find(); 
+    if (list.length === 0) {
+      inviteHistoryEl.innerHTML = "暂无记录";
+      return;
+    }
+    inviteHistoryEl.innerHTML = "";
+    list.forEach(item => {
+      const room = item.get('room');
+      const code = item.get('code');
+      const url = window.location.origin + window.location.pathname + "?invite=" + code;
+      const div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML = `
+        <div class="info">
+          <span class="room-n">${room}</span>
+          <span class="code-n">码: ${code}</span>
+        </div>
+        <div class="btn-copy" onclick="copyToClipboard('${url}')">复制</div>
+      `;
+      inviteHistoryEl.appendChild(div);
+    });
+  } catch (e) {
+    inviteHistoryEl.innerHTML = "加载失败或无权限";
+    throw e;
+  }
+}
+
+function copyToClipboard(text) {
+  const el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  sys("📋 邀请链接已复制");
+}
+
+doCreateRoomBtn.onclick = async () => {
+  const roomName = newRoomNameInput.value.trim();
+  if (!currentAdminSecret || !roomName) return alert("请填写房间名");
+  try {
+    doCreateRoomBtn.disabled = true;
+    const res = await fetch(API_BASE + "/api/invite/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-secret": currentAdminSecret },
+      body: JSON.stringify({ room: roomName, ttlMinutes: 129600 })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    sys("✨ 新房间邀请已生成！");
+    await refreshInviteHistory(); 
+    newRoomNameInput.value = "";
+  } catch (e) {
+    alert("创建失败: " + e.message);
+  } finally {
+    doCreateRoomBtn.disabled = false;
+  }
+};
+
+/* ========== 3. 聊天核心逻辑 ========== */
 async function getRTMSignature() {
   const res = await fetch(API_BASE + "/api/rtm/sign", {
     method: "POST",
@@ -218,16 +327,16 @@ async function startIM() {
   
   myClientId = user.getUsername();
   whoamiEl.textContent = myClientId;
-  if (isAdminMode) document.getElementById("toggleAdmin").style.display = "block";
+  if (isAdminMode) toggleAdminBtn.style.display = "block";
 
   if (!inviteCode) {
-    document.getElementById("statusText").textContent = "未持有邀请，请联系管理员";
+    document.getElementById("statusText").textContent = "等待邀请...";
+    sys("👋 欢迎！请使用邀请链接进入聊天室。");
     return;
   }
 
   try {
-    document.getElementById("statusText").textContent = "正在同步聊天室...";
-    // 兑换邀请码
+    document.getElementById("statusText").textContent = "连接中...";
     const res = await fetch(API_BASE + "/api/invite/redeem", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -237,38 +346,41 @@ async function startIM() {
     const redeem = await res.json();
     window.chatToken = redeem.chatToken;
 
-    // 连接 RTM
     const Realtime = (window.AV && window.AV.Realtime) || window.Realtime;
     const realtime = new Realtime({ appId: APP_ID, appKey: APP_KEY, server: SERVER_URL, auth: getRTMSignature });
     client = await realtime.createIMClient(myClientId);
 
-    // 进入房间
     const query = client.getQuery().equalTo('name', redeem.room);
     const results = await query.find();
     conversation = results.length > 0 ? results[0] : await client.createConversation({ name: redeem.room, unique: false });
     
     await conversation.join();
     document.getElementById("roomTag").textContent = "Room: " + redeem.room;
-    document.getElementById("statusText").textContent = "已连接";
+    document.getElementById("statusText").textContent = "在线";
     document.getElementById("badge").style.background = "#52c41a";
 
-    // 监听消息
     client.on("message", (m, conv) => {
       if (conv.id === conversation.id && m.from !== myClientId && m.text) {
         addMsg({ from: m.from, time: m.timestamp, text: m.text });
       }
     });
 
-    // 加载历史
     const msgs = await conversation.queryMessages({ limit: 20 });
     msgs.forEach(m => { if (m.text) addMsg({ from: m.from, time: m.timestamp, text: m.text }); });
 
   } catch (e) {
-    document.getElementById("statusText").textContent = "进入失败: " + e.message;
+    document.getElementById("statusText").textContent = "错误: " + e.message;
   }
 }
 
-/* ========== 3. 其他辅助 UI (管理、发送等) ========== */
+function sys(text) {
+  const div = document.createElement("div");
+  div.className = "sys";
+  div.textContent = text;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
 function addMsg({ from, time, text }) {
   const d = new Date(time || Date.now());
   const tStr = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
@@ -299,13 +411,8 @@ async function send() {
 document.getElementById("sendBtn").onclick = send;
 document.getElementById("msgInput").onkeydown = (e) => e.key === "Enter" && send();
 
-/* 管理逻辑省略（与之前版本一致，仅调整 UI 触发） */
-document.getElementById("toggleAdmin").onclick = () => {
-  const p = document.getElementById("adminPanel");
-  p.style.display = p.style.display === "flex" ? "none" : "flex";
-};
+document.getElementById("pickBtn").onclick = () => document.getElementById("imgInput").click();
 
-// 页面加载时直接启动
 startIM();
 </script>
 </body>
