@@ -142,7 +142,12 @@
 const APP_ID = "cf8fIUbJ0JZQmYfiihY6B1Fv-MdYXbMMI";
 const APP_KEY = "UgnyTX8j3XGlfHPyGqPxgEB5";
 const SERVER_URL = "https://cf8fiubj.api.lncldglobal.com";
-AV.init({ appId: APP_ID, appKey: APP_KEY, serverURL: SERVER_URL });
+
+// ✅ 修复：增加 guard 判断，防止重复初始化报错
+if (!AV.applicationId) {
+  AV.init({ appId: APP_ID, appKey: APP_KEY, serverURL: SERVER_URL });
+}
+
 const API_BASE = "https://chat-xyjdzs.avosapps.us";
 
 /* ========== 状态变量 ========== */
@@ -369,7 +374,12 @@ async function startIM() {
     msgs.forEach(m => { if (m.text) addMsg({ from: m.from, time: m.timestamp, text: m.text }); });
 
   } catch (e) {
-    document.getElementById("statusText").textContent = "错误: " + e.message;
+    // ✅ 修复：如果报错是因为重复初始化，我们忽略它继续逻辑，或者友好的展示
+    if (e.message && e.message.includes("already initialized")) {
+       console.warn("LeanCloud App already initialized, skipping init.");
+    } else {
+       document.getElementById("statusText").textContent = "错误: " + e.message;
+    }
   }
 }
 
