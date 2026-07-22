@@ -67,6 +67,10 @@
     .btn.primary{ background:var(--blue); color:#fff; border-color:var(--blue); }
     .btn.sm { padding: 4px 8px; font-size: 11px; border-radius: 6px; }
     .btn.icon { border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .language-switcher { display:flex; overflow:hidden; border:1px solid var(--border); border-radius:6px; background:#fff; }
+    .language-button { width:auto; padding:5px 8px; border:0; border-right:1px solid var(--border); background:#fff; color:var(--muted); cursor:pointer; font-size:11px; font-weight:700; }
+    .language-button:last-child { border-right:0; }
+    .language-button[aria-pressed="true"] { color:#fff; background:var(--blue); }
 
     #viewer{ position:fixed; inset:0; background:rgba(0,0,0,0.9); display:none; align-items:center; justify-content:center; z-index:9999; padding: 20px; }
     #viewer img{ max-width:100%; max-height:100%; border-radius:8px; object-fit: contain; }
@@ -81,8 +85,8 @@
 
 <body>
 <header>
-  <div>内部聊天室</div>
-  <small id="roomTag">CID: -</small>
+  <div data-i18n="siteTitle">内部聊天室</div>
+  <div style="display:flex; align-items:center; gap:8px;"><div class="language-switcher" role="group" aria-label="Language selector" data-i18n-aria-label="languageSelector"><button class="language-button" type="button" data-language="zh" aria-pressed="true">中文</button><button class="language-button" type="button" data-language="en" aria-pressed="false">EN</button></div><small id="roomTag">CID: -</small></div>
 </header>
 
 <div id="wrap">
@@ -91,13 +95,13 @@
     <div class="auth-card">
       <h2 id="authTitle">用户登录</h2>
       <div class="auth-tabs">
-        <div class="auth-tab active" id="tabLogin">登录</div>
-        <div class="auth-tab" id="tabSignup">注册账号</div>
+        <div class="auth-tab active" id="tabLogin" data-i18n="logIn">登录</div>
+        <div class="auth-tab" id="tabSignup" data-i18n="signUp">注册账号</div>
       </div>
       <div class="auth-form">
-        <input type="text" id="authUsername" placeholder="昵称 / 账号" autocomplete="username" />
-        <input type="password" id="authPassword" placeholder="密码" autocomplete="current-password" />
-        <button class="btn primary" id="doAuth">立即进入</button>
+        <input type="text" id="authUsername" placeholder="昵称 / 账号" data-i18n-placeholder="usernamePlaceholder" autocomplete="username" />
+        <input type="password" id="authPassword" placeholder="密码" data-i18n-placeholder="passwordPlaceholder" autocomplete="current-password" />
+        <button class="btn primary" id="doAuth" data-i18n="enterNow">立即进入</button>
       </div>
       <p id="authMsg" style="font-size: 12px; color: #ff4d4f; margin-top: 10px; text-align: center;"></p>
     </div>
@@ -106,30 +110,30 @@
   <!-- 管理面板 -->
   <div id="adminPanel">
     <h3>
-      <span>🛠️ 管理控制台</span>
-      <button class="btn sm" id="adminLogout" style="display:none">退出管理</button>
+      <span data-i18n="adminConsole">🛠️ 管理控制台</span>
+      <button class="btn sm" id="adminLogout" style="display:none" data-i18n="adminLogOut">退出管理</button>
     </h3>
     <div id="adminAuth" class="admin-auth-box">
-      <input type="password" id="adminSecret" placeholder="输入管理密钥" />
-      <button class="btn primary" id="doAdminLogin">登录管理后台</button>
+      <input type="password" id="adminSecret" placeholder="输入管理密钥" data-i18n-placeholder="adminSecretPlaceholder" />
+      <button class="btn primary" id="doAdminLogin" data-i18n="adminLogIn">登录管理后台</button>
     </div>
     <div id="adminMain" class="admin-content">
       <div style="display:flex; gap:8px;">
-        <input type="text" id="newRoomName" placeholder="新房间名" style="flex:1" />
-        <button class="btn primary" id="doCreateRoom">生成</button>
+        <input type="text" id="newRoomName" placeholder="新房间名" data-i18n-placeholder="roomNamePlaceholder" style="flex:1" />
+        <button class="btn primary" id="doCreateRoom" data-i18n="create">生成</button>
       </div>
-      <div id="inviteHistory">加载历史中...</div>
+      <div id="inviteHistory" data-i18n="loadingHistory">加载历史中...</div>
     </div>
   </div>
 
   <div id="status">
     <div class="left">
       <div id="badge"></div>
-      <div id="statusText" style="font-size: 13px; color: var(--muted); margin-left: 6px;">正在初始化...</div>
+      <div id="statusText" style="font-size: 13px; color: var(--muted); margin-left: 6px;" data-i18n="initializing">正在初始化...</div>
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
-      <button class="btn sm" style="display:none;" id="toggleAdmin">管理</button>
-      <button class="btn sm" id="userLogout">退出</button>
+      <button class="btn sm" style="display:none;" id="toggleAdmin" data-i18n="admin">管理</button>
+      <button class="btn sm" id="userLogout" data-i18n="logOut">退出</button>
       <div id="whoami">-</div>
     </div>
   </div>
@@ -137,9 +141,9 @@
   <div id="chat"></div>
 
   <footer>
-    <button class="btn icon" id="pickBtn" title="发送图片">🖼️</button>
-    <input id="msgInput" type="text" placeholder="输入消息…" autocomplete="off" />
-    <button class="btn primary" id="sendBtn" style="padding: 0 16px; height: 40px; border-radius: 20px;">发送</button>
+    <button class="btn icon" id="pickBtn" title="发送图片" data-i18n-title="sendImage">🖼️</button>
+    <input id="msgInput" type="text" placeholder="输入消息…" data-i18n-placeholder="messagePlaceholder" autocomplete="off" />
+    <button class="btn primary" id="sendBtn" style="padding: 0 16px; height: 40px; border-radius: 20px;" data-i18n="send">发送</button>
     <input id="imgInput" type="file" accept="image/*" style="display:none" />
   </footer>
 </div>
@@ -150,6 +154,60 @@
 <script src="https://cdn.jsdelivr.net/npm/leancloud-realtime@5.0.0-rc.8/dist/im-browser.min.js"></script>
 
 <script>
+const translations = {
+  zh: {
+    languageSelector: '语言选择', siteTitle: '内部聊天室', logIn: '登录', signUp: '注册账号', loginTitle: '用户登录', signupTitle: '注册新账号',
+    usernamePlaceholder: '昵称 / 账号', passwordPlaceholder: '密码', enterNow: '立即进入', adminConsole: '🛠️ 管理控制台', adminLogOut: '退出管理',
+    adminSecretPlaceholder: '输入管理密钥', adminLogIn: '登录管理后台', roomNamePlaceholder: '新房间名', create: '生成', loadingHistory: '加载历史中...',
+    initializing: '正在初始化...', admin: '管理', logOut: '退出', sendImage: '发送图片', messagePlaceholder: '输入消息…', send: '发送',
+    completeFields: '请填写完整信息', signupSuccess: '注册成功，正在登录...', operationFailed: '操作失败: ', adminSignedIn: '🔑 管理后台已登录', adminLoginFailed: '登录失败，密钥不正确',
+    fetchingHistory: '正在拉取记录...', noHistory: '暂无记录', copy: '复制', code: '码: ', loadFailed: '加载失败', inviteCopied: '📋 邀请链接已复制',
+    enterRoomName: '请填写房间名', invitationCreated: '✨ 新房间邀请已生成！', creationFailed: '创建失败: ', waitingForInvite: '等待邀请...', welcomeWithInvite: '👋 欢迎！请使用邀请链接进入聊天室。',
+    online: '在线', connecting: '连接中...', inviteValidationFailed: '邀请验证失败', error: '错误: ', sendFailed: '❌ 发送失败', imageTooLarge: (size) => `❌ 图片太大，限制 ${size}MB`, uploadingImage: '⏳ 正在上传图片...', imageSent: '✅ 图片已发送', imageSendFailed: '❌ 图片发送失败', room: '房间: ', pageTitle: '内部聊天室'
+  },
+  en: {
+    languageSelector: 'Language selector', siteTitle: 'Researcher Chat', logIn: 'Log in', signUp: 'Sign up', loginTitle: 'User Login', signupTitle: 'Create Account',
+    usernamePlaceholder: 'Display name / username', passwordPlaceholder: 'Password', enterNow: 'Continue', adminConsole: '🛠️ Admin Console', adminLogOut: 'Log out of admin',
+    adminSecretPlaceholder: 'Enter admin secret', adminLogIn: 'Sign in to admin', roomNamePlaceholder: 'New room name', create: 'Create', loadingHistory: 'Loading history...',
+    initializing: 'Initializing...', admin: 'Admin', logOut: 'Log out', sendImage: 'Send image', messagePlaceholder: 'Type a message...', send: 'Send',
+    completeFields: 'Enter both username and password', signupSuccess: 'Account created. Signing in...', operationFailed: 'Operation failed: ', adminSignedIn: '🔑 Signed in to the admin console', adminLoginFailed: 'Login failed: incorrect secret',
+    fetchingHistory: 'Loading invitation history...', noHistory: 'No invitation records', copy: 'Copy', code: 'Code: ', loadFailed: 'Unable to load history', inviteCopied: '📋 Invitation link copied',
+    enterRoomName: 'Enter a room name', invitationCreated: '✨ New room invitation created', creationFailed: 'Creation failed: ', waitingForInvite: 'Waiting for an invitation...', welcomeWithInvite: '👋 Welcome. Use an invitation link to enter a chat room.',
+    online: 'Online', connecting: 'Connecting...', inviteValidationFailed: 'Invitation validation failed', error: 'Error: ', sendFailed: '❌ Message failed to send', imageTooLarge: (size) => `❌ Image is too large. Limit: ${size} MB`, uploadingImage: '⏳ Uploading image...', imageSent: '✅ Image sent', imageSendFailed: '❌ Image failed to send', room: 'Room: ', pageTitle: 'Researcher Chat'
+  }
+};
+const languageStorageKey = 'researcher-forum-language';
+let currentLanguage = 'zh';
+
+function getInitialLanguage() {
+  const requested = new URLSearchParams(location.search).get('lang');
+  if (requested === 'zh' || requested === 'en') return requested;
+  try { const stored = localStorage.getItem(languageStorageKey); if (stored === 'zh' || stored === 'en') return stored; } catch (error) {}
+  return 'zh';
+}
+
+function setLanguage(language, { updateUrl = true } = {}) {
+  if (!translations[language]) return;
+  currentLanguage = language;
+  const copy = translations[language];
+  document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN';
+  document.title = copy.pageTitle;
+  document.querySelectorAll('[data-i18n]').forEach(element => { if (copy[element.dataset.i18n]) element.textContent = copy[element.dataset.i18n]; });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(element => { if (copy[element.dataset.i18nPlaceholder]) element.placeholder = copy[element.dataset.i18nPlaceholder]; });
+  document.querySelectorAll('[data-i18n-title]').forEach(element => { if (copy[element.dataset.i18nTitle]) element.title = copy[element.dataset.i18nTitle]; });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(element => { if (copy[element.dataset.i18nAriaLabel]) element.setAttribute('aria-label', copy[element.dataset.i18nAriaLabel]); });
+  document.querySelectorAll('[data-language]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.language === language)));
+  updateAuthUI();
+  try { localStorage.setItem(languageStorageKey, language); } catch (error) {}
+  if (updateUrl) {
+    const url = new URL(location.href);
+    if (language === 'en') url.searchParams.set('lang', 'en'); else url.searchParams.delete('lang');
+    history.replaceState({}, '', url);
+  }
+}
+
+document.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => setLanguage(button.dataset.language)));
+
 /* ========== 初始化 ========== */
 const APP_ID = "cf8fIUbJ0JZQmYfiihY6B1Fv-MdYXbMMI";
 const APP_KEY = "UgnyTX8j3XGlfHPyGqPxgEB5";
@@ -185,7 +243,7 @@ const viewerImg = document.getElementById("viewerImg");
 
 /* ========== 1. 用户认证逻辑 ========== */
 function updateAuthUI() {
-  document.getElementById("authTitle").textContent = authMode === "login" ? "用户登录" : "注册新账号";
+  document.getElementById("authTitle").textContent = authMode === "login" ? translations[currentLanguage].loginTitle : translations[currentLanguage].signupTitle;
   document.getElementById("tabLogin").className = authMode === "login" ? "auth-tab active" : "auth-tab";
   document.getElementById("tabSignup").className = authMode === "signup" ? "auth-tab active" : "auth-tab";
 }
@@ -196,7 +254,7 @@ document.getElementById("tabSignup").onclick = () => { authMode = "signup"; upda
 doAuthBtn.onclick = async () => {
   const username = authUsernameInput.value.trim();
   const password = authPasswordInput.value.trim();
-  if (!username || !password) return (authMsg.textContent = "请填写完整信息");
+  if (!username || !password) return (authMsg.textContent = translations[currentLanguage].completeFields);
 
   try {
     doAuthBtn.disabled = true;
@@ -206,14 +264,14 @@ doAuthBtn.onclick = async () => {
       user.setUsername(username);
       user.setPassword(password);
       await user.signUp();
-      authMsg.textContent = "注册成功，正在登录...";
+      authMsg.textContent = translations[currentLanguage].signupSuccess;
     } else {
       user = await AV.User.logIn(username, password);
     }
     authOverlay.style.display = "none";
     startIM(); 
   } catch (e) {
-    authMsg.textContent = "操作失败: " + (e.message || e);
+    authMsg.textContent = translations[currentLanguage].operationFailed + (e.message || e);
   } finally {
     doAuthBtn.disabled = false;
   }
@@ -239,9 +297,9 @@ document.getElementById("doAdminLogin").onclick = async () => {
     document.getElementById("adminAuth").style.display = "none";
     document.getElementById("adminMain").style.display = "flex";
     document.getElementById("adminLogout").style.display = "block";
-    sys("🔑 管理后台已登录");
+    sys(translations[currentLanguage].adminSignedIn);
   } catch (e) {
-    alert("登录失败，密钥不正确");
+    alert(translations[currentLanguage].adminLoginFailed);
     currentAdminSecret = "";
   }
 };
@@ -256,14 +314,14 @@ document.getElementById("adminLogout").onclick = () => {
 
 async function refreshInviteHistory() {
   const inviteHistoryEl = document.getElementById("inviteHistory");
-  inviteHistoryEl.innerHTML = "正在拉取记录...";
+  inviteHistoryEl.innerHTML = translations[currentLanguage].fetchingHistory;
   const query = new AV.Query('InviteCode');
   query.descending('createdAt');
   query.limit(20);
   try {
     const list = await query.find(); 
     if (list.length === 0) {
-      inviteHistoryEl.innerHTML = "暂无记录";
+      inviteHistoryEl.innerHTML = translations[currentLanguage].noHistory;
       return;
     }
     inviteHistoryEl.innerHTML = "";
@@ -276,14 +334,14 @@ async function refreshInviteHistory() {
       div.innerHTML = `
         <div class="info">
           <span class="room-n">${room}</span>
-          <span class="code-n">码: ${code}</span>
+          <span class="code-n">${translations[currentLanguage].code}${code}</span>
         </div>
-        <div class="btn-copy" onclick="copyToClipboard('${url}')">复制</div>
+        <div class="btn-copy" onclick="copyToClipboard('${url}')">${translations[currentLanguage].copy}</div>
       `;
       inviteHistoryEl.appendChild(div);
     });
   } catch (e) {
-    inviteHistoryEl.innerHTML = "加载失败";
+    inviteHistoryEl.innerHTML = translations[currentLanguage].loadFailed;
     throw e;
   }
 }
@@ -295,13 +353,13 @@ function copyToClipboard(text) {
   el.select();
   document.execCommand('copy');
   document.body.removeChild(el);
-  sys("📋 邀请链接已复制");
+  sys(translations[currentLanguage].inviteCopied);
 }
 
 document.getElementById("doCreateRoom").onclick = async () => {
   const roomName = document.getElementById("newRoomName").value.trim();
   const btn = document.getElementById("doCreateRoom");
-  if (!currentAdminSecret || !roomName) return alert("请填写房间名");
+  if (!currentAdminSecret || !roomName) return alert(translations[currentLanguage].enterRoomName);
   try {
     btn.disabled = true;
     const res = await fetch(API_BASE + "/api/invite/create", {
@@ -310,11 +368,11 @@ document.getElementById("doCreateRoom").onclick = async () => {
       body: JSON.stringify({ room: roomName, ttlMinutes: 129600 })
     });
     if (!res.ok) throw new Error(await res.text());
-    sys("✨ 新房间邀请已生成！");
+    sys(translations[currentLanguage].invitationCreated);
     await refreshInviteHistory(); 
     document.getElementById("newRoomName").value = "";
   } catch (e) {
-    alert("创建失败: " + e.message);
+    alert(translations[currentLanguage].creationFailed + e.message);
   } finally {
     btn.disabled = false;
   }
@@ -341,26 +399,26 @@ async function startIM() {
   if (isAdminMode) document.getElementById("toggleAdmin").style.display = "block";
 
   if (!inviteCode) {
-    document.getElementById("statusText").textContent = "等待邀请...";
-    sys("👋 欢迎！请使用邀请链接进入聊天室。");
+    document.getElementById("statusText").textContent = translations[currentLanguage].waitingForInvite;
+    sys(translations[currentLanguage].welcomeWithInvite);
     return;
   }
 
   // 如果 client 已经存在且是连接状态，直接更新 UI 并返回
   if (client && client.connected) {
-    document.getElementById("statusText").textContent = "在线";
+    document.getElementById("statusText").textContent = translations[currentLanguage].online;
     document.getElementById("badge").style.background = "#52c41a";
     return;
   }
 
   try {
-    document.getElementById("statusText").textContent = "连接中...";
+    document.getElementById("statusText").textContent = translations[currentLanguage].connecting;
     const res = await fetch(API_BASE + "/api/invite/redeem", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code: inviteCode, name: myClientId })
     });
-    if (!res.ok) throw new Error("邀请验证失败");
+    if (!res.ok) throw new Error(translations[currentLanguage].inviteValidationFailed);
     const redeem = await res.json();
     window.chatToken = redeem.chatToken;
 
@@ -373,10 +431,10 @@ async function startIM() {
     conversation = results.length > 0 ? results[0] : await client.createConversation({ name: redeem.room, unique: false });
     
     await conversation.join();
-    document.getElementById("roomTag").textContent = "Room: " + redeem.room;
+    document.getElementById("roomTag").textContent = translations[currentLanguage].room + redeem.room;
     
     // ✅ 修复点：确保在所有异步操作完成后更新状态
-    document.getElementById("statusText").textContent = "在线";
+    document.getElementById("statusText").textContent = translations[currentLanguage].online;
     document.getElementById("badge").style.background = "#52c41a";
 
     client.on("message", (m, conv) => {
@@ -393,10 +451,10 @@ async function startIM() {
     if (e.message && e.message.includes("already initialized")) {
        console.warn("LeanCloud App already initialized.");
        // 如果走到这里通常意味着之前已经成功过，强制设为在线
-       document.getElementById("statusText").textContent = "在线";
+       document.getElementById("statusText").textContent = translations[currentLanguage].online;
        document.getElementById("badge").style.background = "#52c41a";
     } else {
-       document.getElementById("statusText").textContent = "错误: " + e.message;
+       document.getElementById("statusText").textContent = translations[currentLanguage].error + e.message;
        document.getElementById("badge").style.background = "#ff4d4f";
     }
   }
@@ -448,7 +506,7 @@ async function send() {
     const TextMessage = (window.AV && window.AV.TextMessage) || window.TextMessage;
     await conversation.send(new TextMessage(text));
     addMsg({ from: myClientId, time: Date.now(), text });
-  } catch (e) { sys("❌ 发送失败"); }
+  } catch (e) { sys(translations[currentLanguage].sendFailed); }
 }
 
 document.getElementById("sendBtn").onclick = send;
@@ -462,13 +520,13 @@ imgInput.onchange = async () => {
 
   const MAX_MB = 10;
   if (file.size > MAX_MB * 1024 * 1024) {
-    sys(`❌ 图片太大，限制 ${MAX_MB}MB`);
+    sys(translations[currentLanguage].imageTooLarge(MAX_MB));
     imgInput.value = "";
     return;
   }
 
   try {
-    sys("⏳ 正在上传图片...");
+    sys(translations[currentLanguage].uploadingImage);
     const avFile = new AV.File(file.name, file);
     await avFile.save();
     const url = avFile.url();
@@ -477,15 +535,16 @@ imgInput.onchange = async () => {
     const TextMessage = (window.AV && window.AV.TextMessage) || window.TextMessage;
     await conversation.send(new TextMessage(payload));
     addMsg({ from: myClientId, time: Date.now(), text: payload });
-    sys("✅ 图片已发送");
+    sys(translations[currentLanguage].imageSent);
   } catch (e) {
     console.error(e);
-    sys("❌ 图片发送失败");
+    sys(translations[currentLanguage].imageSendFailed);
   } finally {
     imgInput.value = "";
   }
 };
 
+setLanguage(getInitialLanguage(), { updateUrl: false });
 startIM();
 </script>
 </body>
